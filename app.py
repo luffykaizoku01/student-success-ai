@@ -4,6 +4,20 @@ import numpy as np
 import pandas as pd
 import gradio as gr
 
+def check_login(username, password):
+    if username == "student" and password == "Student@123":
+        return (
+            "Login successful! Welcome.",
+            gr.update(visible=False),
+            gr.update(visible=True)
+        )
+
+    return (
+        "Incorrect username or password.",
+        gr.update(visible=True),
+        gr.update(visible=False)
+    )
+
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
@@ -361,6 +375,43 @@ with gr.Blocks(
     ),
     css=CUSTOM_CSS,
 ) as demo:
+    
+    with gr.Column(visible=True) as login_panel:
+        gr.Markdown("""
+        # 🎓 Student Success AI
+        ### Welcome back!
+        Sign in to access your student performance predictions.
+        """)
+
+        username = gr.Textbox(
+            label="Username",
+            placeholder="Enter your username"
+        )
+
+        password = gr.Textbox(
+            label="Password",
+            placeholder="Enter your password",
+            type="password"
+        )
+
+        login_button = gr.Button(
+            "Login",
+            variant="primary"
+        )
+
+        login_message = gr.Markdown()
+
+    with gr.Column(visible=False) as main_app:
+        # Move your EXISTING dashboard interface here.
+        # Keep all your existing prediction components
+        # and their callbacks inside this column.
+
+    login_button.click(
+        fn=check_login,
+        inputs=[username, password],
+        outputs=[login_message, login_panel, main_app]
+    )
+
 
     gr.HTML("""
     <div id="hero">
