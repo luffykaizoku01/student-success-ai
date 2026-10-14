@@ -366,6 +366,21 @@ body {
 # 4. BUILD THE WEBSITE
 # --------------------------------------------------
 
+def check_login(username, password):
+    if username == "student" and password == "Student@123":
+        return (
+            "✅ Login successful! Welcome.",
+            gr.update(visible=False),
+            gr.update(visible=True),
+        )
+
+    return (
+        "❌ Incorrect username or password.",
+        gr.update(visible=True),
+        gr.update(visible=False),
+    )
+
+
 with gr.Blocks(
     title="Student Success AI | Academic Planner",
     theme=gr.themes.Soft(
@@ -375,7 +390,8 @@ with gr.Blocks(
     ),
     css=CUSTOM_CSS,
 ) as demo:
-    
+
+    # 1. LOGIN PAGE
     with gr.Column(visible=True) as login_panel:
         gr.Markdown("""
         # 🎓 Student Success AI
@@ -385,116 +401,39 @@ with gr.Blocks(
 
         username = gr.Textbox(
             label="Username",
-            placeholder="Enter your username"
+            placeholder="Enter your username",
         )
 
         password = gr.Textbox(
             label="Password",
             placeholder="Enter your password",
-            type="password"
+            type="password",
         )
 
-        login_button = gr.Button(
-            "Login",
-            variant="primary"
-        )
-
+        login_button = gr.Button("Login", variant="primary")
         login_message = gr.Markdown()
 
+    # 2. MAIN DASHBOARD — HIDDEN UNTIL LOGIN
     with gr.Column(visible=False) as main_app:
-        # Move your EXISTING dashboard interface here.
-        # Keep all your existing prediction components
-        # and their callbacks inside this column.
 
+        # MOVE YOUR EXISTING DASHBOARD CODE HERE:
+        # - Hero section
+        # - Academic profile sliders
+        # - Daily routine sliders
+        # - Predict button
+        # - Success report output
+        # - Footer
+
+        # Keep your existing predict_button.click(...)
+        # inside this column, after creating its components.
+
+        pass  # REMOVE THIS after inserting your dashboard
+
+    # 3. LOGIN BUTTON ACTION
     login_button.click(
         fn=check_login,
         inputs=[username, password],
-        outputs=[login_message, login_panel, main_app]
-    )
-
-
-    gr.HTML("""
-    <div id="hero">
-      <div class="brand-tag">AI-POWERED LEARNING ASSISTANT</div>
-      <h1>Student Success AI 🎓</h1>
-      <p>
-        Understand your academic progress, estimate your potential
-        final score, and discover practical steps to improve your
-        study routine.
-      </p>
-    </div>
-    """)
-
-    with gr.Row(equal_height=False):
-        with gr.Column(scale=1, elem_classes=["panel"]):
-            gr.Markdown(
-                "## 📚 Your academic profile\n"
-                "Adjust the values to match your current progress.",
-                elem_classes=["section-title"],
-            )
-
-            attendance = gr.Slider(
-                0, 100, value=80, step=1,
-                label="Attendance (%)",
-            )
-            assignment = gr.Slider(
-                0, 100, value=75, step=1,
-                label="Assignment average (%)",
-            )
-            midterm = gr.Slider(
-                0, 100, value=65, step=1,
-                label="Midterm score (%)",
-            )
-            previous = gr.Slider(
-                0, 100, value=70, step=1,
-                label="Previous score (%)",
-            )
-
-            gr.Markdown("### ⏱️ Daily routine")
-
-            study = gr.Slider(
-                0, 12, value=3, step=0.5,
-                label="Study hours per day",
-            )
-            sleep = gr.Slider(
-                0, 12, value=8, step=0.5,
-                label="Sleep hours per day",
-            )
-
-            predict_button = gr.Button(
-                "✨  Predict My Success",
-                variant="primary",
-                elem_id="predict-btn",
-            )
-
-        with gr.Column(scale=1, elem_id="result-panel"):
-            gr.Markdown(
-                "## 📈 Your success report\n\n"
-                "Adjust your academic details and select "
-                "**Predict My Success** to view your estimate "
-                "and personalised recommendations."
-            )
-
-            output = gr.Markdown()
-
-    gr.HTML("""
-    <div id="footer">
-      Student Success AI · Educational demonstration<br>
-      Predictions are estimates, not official academic results.
-    </div>
-    """)
-
-    predict_button.click(
-        fn=predict_success,
-        inputs=[
-            attendance,
-            assignment,
-            midterm,
-            study,
-            previous,
-            sleep,
-        ],
-        outputs=output,
+        outputs=[login_message, login_panel, main_app],
     )
 
 
