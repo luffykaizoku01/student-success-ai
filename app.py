@@ -4,27 +4,42 @@ import numpy as np
 import pandas as pd
 import gradio as gr
 
-def check_login(username, password):
-    if username == "student" and password == "Student@123":
-        return (
-            "Login successful! Welcome.",
-            gr.update(visible=False),
-            gr.update(visible=True)
-        )
-
-    return (
-        "Incorrect username or password.",
-        gr.update(visible=True),
-        gr.update(visible=False)
-    )
-
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 
 
 # --------------------------------------------------
-# 1. TRAIN THE DEMONSTRATION MODEL
+# 1. LOGIN AND LOGOUT FUNCTIONS
+# --------------------------------------------------
+
+def check_login(username, password):
+    if username == "student" and password == "Student@123":
+        return (
+            "✅ Login successful! Welcome.",
+            gr.update(visible=False),
+            gr.update(visible=True),
+        )
+
+    return (
+        "❌ Incorrect username or password.",
+        gr.update(visible=True),
+        gr.update(visible=False),
+    )
+
+
+def logout():
+    return (
+        gr.update(visible=True),   # Show login page
+        gr.update(visible=False),  # Hide dashboard
+        "",                        # Clear username
+        "",                        # Clear password
+        "",                        # Clear login message
+    )
+
+
+# --------------------------------------------------
+# 2. TRAIN THE DEMONSTRATION MODEL
 # --------------------------------------------------
 
 np.random.seed(42)
@@ -78,7 +93,7 @@ mae = mean_absolute_error(y_test, model.predict(X_test))
 
 
 # --------------------------------------------------
-# 2. PERSONALIZED PREDICTION AND RECOMMENDATIONS
+# 3. PREDICTION AND RECOMMENDATIONS
 # --------------------------------------------------
 
 def predict_success(
@@ -120,14 +135,14 @@ def predict_success(
 
     if assignment < 70:
         tips.append(
-            "**Assignments:** Practise the topics you find difficult "
-            "and submit work on time."
+            "**Assignments:** Practise difficult topics "
+            "and submit your work on time."
         )
 
     if midterm < 60:
         tips.append(
-            "**Midterm preparation:** Review incorrect answers and "
-            "practise questions from weaker units."
+            "**Midterm preparation:** Review incorrect answers "
+            "and practise questions from weaker units."
         )
 
     if study_hours < 2:
@@ -138,13 +153,13 @@ def predict_success(
 
     if previous_score < 60:
         tips.append(
-            "**Fundamentals:** Revisit concepts from earlier topics "
-            "before moving to advanced material."
+            "**Fundamentals:** Revise earlier concepts "
+            "before moving to advanced topics."
         )
 
     if sleep_hours < 7:
         tips.append(
-            "**Rest:** Try to maintain a regular sleep routine "
+            "**Rest:** Maintain a regular sleep routine "
             "and allow enough time for rest."
         )
 
@@ -180,7 +195,7 @@ def predict_success(
 
 
 # --------------------------------------------------
-# 3. PROFESSIONAL, RESPONSIVE DESIGN
+# 4. PROFESSIONAL RESPONSIVE DESIGN
 # --------------------------------------------------
 
 CUSTOM_CSS = """
@@ -363,7 +378,7 @@ body {
 
 
 # --------------------------------------------------
-# 4. BUILD THE WEBSITE
+# 5. BUILD THE WEBSITE
 # --------------------------------------------------
 
 with gr.Blocks(
@@ -376,24 +391,35 @@ with gr.Blocks(
     css=CUSTOM_CSS,
 ) as demo:
 
-    # Login page
+    # LOGIN PAGE
     with gr.Column(visible=True) as login_panel:
         gr.Markdown("""
         # 🎓 Student Success AI
         ### Welcome back!
         Sign in to access your student performance predictions.
         """)
-        username = gr.Textbox(label="Username", placeholder="Enter your username")
+
+        username = gr.Textbox(
+            label="Username",
+            placeholder="Enter your username",
+        )
+
         password = gr.Textbox(
             label="Password",
             placeholder="Enter your password",
             type="password",
         )
+
         login_button = gr.Button("Login", variant="primary")
         login_message = gr.Markdown()
 
-    # Full dashboard, hidden until successful login
+    # DASHBOARD — HIDDEN UNTIL LOGIN
     with gr.Column(visible=False) as main_app:
+
+        with gr.Row():
+            gr.Markdown("### 🎓 Student Success AI")
+            logout_button = gr.Button("🚪 Logout", variant="secondary")
+
         gr.HTML("""
         <div id="hero">
           <div class="brand-tag">AI-POWERED LEARNING ASSISTANT</div>
@@ -413,29 +439,37 @@ with gr.Blocks(
                     "Adjust the values to match your current progress.",
                     elem_classes=["section-title"],
                 )
+
                 attendance = gr.Slider(
-                    0, 100, value=80, step=1, label="Attendance (%)"
+                    0, 100, value=80, step=1,
+                    label="Attendance (%)",
                 )
                 assignment = gr.Slider(
                     0, 100, value=75, step=1,
-                    label="Assignment average (%)"
+                    label="Assignment average (%)",
                 )
                 midterm = gr.Slider(
-                    0, 100, value=65, step=1, label="Midterm score (%)"
+                    0, 100, value=65, step=1,
+                    label="Midterm score (%)",
                 )
                 previous = gr.Slider(
-                    0, 100, value=70, step=1, label="Previous score (%)"
+                    0, 100, value=70, step=1,
+                    label="Previous score (%)",
                 )
 
                 gr.Markdown("### ⏱️ Daily routine")
+
                 study = gr.Slider(
-                    0, 12, value=3, step=0.5, label="Study hours per day"
+                    0, 12, value=3, step=0.5,
+                    label="Study hours per day",
                 )
                 sleep = gr.Slider(
-                    0, 12, value=8, step=0.5, label="Sleep hours per day"
+                    0, 12, value=8, step=0.5,
+                    label="Sleep hours per day",
                 )
+
                 predict_button = gr.Button(
-                    "✨  Predict My Success",
+                    "✨ Predict My Success",
                     variant="primary",
                     elem_id="predict-btn",
                 )
@@ -447,6 +481,7 @@ with gr.Blocks(
                     "**Predict My Success** to view your estimate "
                     "and personalised recommendations."
                 )
+
                 output = gr.Markdown()
 
         gr.HTML("""
@@ -456,6 +491,7 @@ with gr.Blocks(
         </div>
         """)
 
+        # PREDICTION BUTTON
         predict_button.click(
             fn=predict_success,
             inputs=[
@@ -469,16 +505,29 @@ with gr.Blocks(
             outputs=output,
         )
 
-    # Login action: hide login and show dashboard after valid credentials
+    # LOGIN ACTION
     login_button.click(
         fn=check_login,
         inputs=[username, password],
         outputs=[login_message, login_panel, main_app],
     )
 
+    # LOGOUT ACTION
+    logout_button.click(
+        fn=logout,
+        inputs=[],
+        outputs=[
+            login_panel,
+            main_app,
+            username,
+            password,
+            login_message,
+        ],
+    )
+
 
 # --------------------------------------------------
-# 5. START SERVER FOR RENDER
+# 6. START SERVER FOR RENDER
 # --------------------------------------------------
 
 if __name__ == "__main__":
